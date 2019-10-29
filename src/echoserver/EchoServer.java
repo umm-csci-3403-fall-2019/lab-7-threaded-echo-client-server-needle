@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class EchoServer {
 	public static final int PORT_NUMBER = 6013;
@@ -16,12 +18,37 @@ public class EchoServer {
 
 	private void start() throws IOException, InterruptedException {
 		ServerSocket serverSocket = new ServerSocket(PORT_NUMBER);
+
 		while (true) {
 			Socket socket = serverSocket.accept();
-			InputStream inputStream = socket.getInputStream();
-			OutputStream outputStream = socket.getOutputStream();
+			ClientReader CR = new ClientReader(socket);
+			ExecutorService pool = Executors.newFixedThreadPool(20);
+			pool.execute(CR);
+			socket.close();
+		}
+	}
 
-			// Put your code here.
+}
+
+
+class ClientReader implements Runnable {
+	private Socket Sock;
+
+	ClientReader(Socket socket){
+		Sock = socket;
+	}
+
+	public void run() {
+		try {
+			InputStream input = Sock.getInputStream();
+			OutputStream output = Sock.getOutputStream();
+			int byteRead;
+			while((byteRead = input.read()) != -1){
+				output.write(byteRead);
+			}
+		} catch (IOException ioe){
+			System.out.println("We caught an unexpected exception");
+			System.err.println(ioe);
 		}
 	}
 }
