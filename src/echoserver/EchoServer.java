@@ -24,7 +24,7 @@ public class EchoServer {
 			ClientReader CR = new ClientReader(socket);
 			ExecutorService pool = Executors.newFixedThreadPool(20);
 			pool.execute(CR);
-			socket.close();
+			pool.shutdown();
 		}
 	}
 
@@ -32,20 +32,21 @@ public class EchoServer {
 
 
 class ClientReader implements Runnable {
-	private Socket Sock;
+	private Socket sock;
 
 	ClientReader(Socket socket){
-		Sock = socket;
+		sock = socket;
 	}
 
 	public void run() {
 		try {
-			InputStream input = Sock.getInputStream();
-			OutputStream output = Sock.getOutputStream();
+			InputStream input = sock.getInputStream();
+			OutputStream output = sock.getOutputStream();
 			int byteRead;
 			while((byteRead = input.read()) != -1){
 				output.write(byteRead);
 			}
+			sock.shutdownOutput();
 		} catch (IOException ioe){
 			System.out.println("We caught an unexpected exception");
 			System.err.println(ioe);
