@@ -18,13 +18,11 @@ public class EchoServer {
 
 	private void start() throws IOException, InterruptedException {
 		ServerSocket serverSocket = new ServerSocket(PORT_NUMBER);
-
+		ExecutorService pool = Executors.newFixedThreadPool(20);
 		while (true) {
 			Socket socket = serverSocket.accept();
 			ClientReader CR = new ClientReader(socket);
-			ExecutorService pool = Executors.newFixedThreadPool(20);
 			pool.execute(CR);
-			pool.shutdown();
 		}
 	}
 
